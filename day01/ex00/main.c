@@ -1,23 +1,26 @@
 #include <avr/io.h>
 
 int main()
- { 
-   DDRB |= (1<<PB0);	//make PORT B pin 0 an output pin
-	
-	TCNT0 = 206;	//load TCNT0 with 206 for  50us delay
-	//configure timer0 for normal mode with pre-scalar of 8
-	TCCR0A =0x00;
-	TCCR0B |= (1<<CS01);		
-	// TIMSK0 |= (1<<TOIE0);		// enable timer overflow interrupt
-	// sei();			//enable global interrupt
-	
-   while (1);
+{
+    DDRB |= (1 << PB1);
 
-   return 0;
- }
+    // Set mode to 4 (CTC)
+    TCCR1B |= (1 << WGM12);
 
-// ISR(TIMER0_OVF_vect){
-// 	TCNT0 = 206;
-// 	PORTB ^= (1<<PB0);
+    // Set Output Compare A Match flag
+    TIFR1 |= (1 << OCF1A);
 
-// }
+    // Set Compare Match Output A on toggling OC1A
+    TCCR1A |= (1 << COM1A0);
+
+    // Set TOP value (31250 aka 0111 1010 0001 0010 aka 16000000 / (prescale * 2)) 
+    OCR1AH = 0b01111010;
+    OCR1AL = 0b00010010;
+
+    // Set prescaling (prescale 256)
+    TCCR1B |= (1 << CS12);
+
+    while (1);
+
+    return 0;
+}
