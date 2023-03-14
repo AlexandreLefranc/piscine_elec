@@ -1,5 +1,5 @@
 #include <avr/io.h>
-// #include <util/delay.h>
+#include <util/delay.h>
 
 static void	delay_ms(uint32_t time)
 {
@@ -29,6 +29,7 @@ int main()
 		// _delay_ms(500);
 		delay_ms(500);
 	}
+
 
 
 	return 0;

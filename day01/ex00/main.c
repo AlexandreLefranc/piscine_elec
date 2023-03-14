@@ -1,17 +1,23 @@
 #include <avr/io.h>
-#include <util/delay.h>
-
-#define DEBOUNCE_TIME 25
 
 int main()
-{
-	OCR1AH = 0x3D;                      //Load higher byte of 15624 into output compare register
-	OCR1AL = 0x08;                      //Load lower byte of 15624 into output compare register
-	TCCR1A = 0b00000000;
-	TCCR1B = 0b00001101; 				//Turn on CTC mode and prescaler of CLK/1024
+ { 
+   DDRB |= (1<<PB0);	//make PORT B pin 0 an output pin
+	
+	TCNT0 = 206;	//load TCNT0 with 206 for  50us delay
+	//configure timer0 for normal mode with pre-scalar of 8
+	TCCR0A =0x00;
+	TCCR0B |= (1<<CS01);		
+	// TIMSK0 |= (1<<TOIE0);		// enable timer overflow interrupt
+	// sei();			//enable global interrupt
+	
+   while (1);
 
-	while (1)
-	{}
+   return 0;
+ }
 
-	return 0;
-}
+// ISR(TIMER0_OVF_vect){
+// 	TCNT0 = 206;
+// 	PORTB ^= (1<<PB0);
+
+// }
