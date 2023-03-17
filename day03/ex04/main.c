@@ -1,8 +1,14 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <stdbool.h>
 
 #define UBBR 8
+
+#define BUFFER_SIZE 64
+
+const char* g_usr = "Bob";
+const char* g_pw = "boB";
 
 void    uart_init()
 {
@@ -16,7 +22,7 @@ void    uart_init()
     // Set frame format: 8data, 2stop bit
     UCSR0C |= (1 << USBS0) | (3 << UCSZ00);
 
-    // Enable interrupt
+    // Enable interrupt on Receive
     UCSR0B |= (1 << RXCIE0);
 }
 
@@ -48,9 +54,9 @@ int main()
     uart_init();
     sei();
 
-    while (1)
-    {
-    }
+    uint8_t done = 0;
+
+    while (1);
 
     return 0;
 }

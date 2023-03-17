@@ -12,10 +12,6 @@ static void	portb_turn_on_only(uint8_t spot)
 	PORTB |= (1 << spot);
 }
 
-enum {
-	
-}
-
 int main()
 {
 	DDRB |= 1 << PB0;
@@ -25,7 +21,6 @@ int main()
 
 	while (1)
 	{
-		if ()
 		portb_turn_on_only(PB0);
 		_delay_ms(100);
 		portb_turn_on_only(PB1);
