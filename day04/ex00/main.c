@@ -32,21 +32,31 @@ void    uart_printstr(const char* str)
     }
 }
 
-void    uart_printbinary(uint8_t data, const char* str)
+void    uart_printbinary(uint8_t data)
 {
-    uart_printstr(str);
-    uart_printstr(" = ");
     uart_printstr("0b");
     for (int8_t i = 7; i >= 0; --i)
         uart_tx(((data >> i) & 0x01) + '0');
-    uart_printstr("\r\n");
 }
 
 void    uart_printhex(uint8_t data)
 {
     const char hex[] = "0123456789ABCDEF";
-    uart_tx(hex[((data >> 4) & 0x0F) % 16]);
-    uart_tx(hex[((data >> 0) & 0x0F) % 16]);
+
+    uart_printstr("0x");
+    uart_tx(hex[((data >> 4) & 0x0F)]);
+    uart_tx(hex[((data >> 0) & 0x0F)]);
+}
+
+void uart_printTWSR()
+{
+    uint8_t reg = TWSR;
+
+    uart_printstr("TWSR is ");
+    uart_printbinary(reg);
+    uart_printstr(" (");
+    uart_printhex(reg);
+    uart_printstr(")\r\n");
 }
 
 
@@ -63,11 +73,6 @@ void    i2c_init()
     TWCR = (1 << TWEN);
 }
 
-void    i2c_reset_twint()
-{
-    TWCR |= (1 << TWINT);
-}
-
 void    i2c_start()
 {
     // 1/ Send START condition
@@ -77,10 +82,11 @@ void    i2c_start()
     while (!(TWCR &(1<<TWINT)));
 
     // 3/ Check value of TWI Status Register
+    uart_printTWSR();
     if ((TWSR & 0xF8) != TW_START)
         uart_printstr("error1\r\n");
-    
-    // 3/ Load 0x38 into TWDR Register.
+
+    // 3/ Load device address into TWDR Register.
     TWDR = (0x38 << 1) | TW_WRITE;
     TWCR = (1<<TWINT) | (1<<TWEN);
 
@@ -88,6 +94,7 @@ void    i2c_start()
     while (!(TWCR &(1<<TWINT)));
 
     // 5/ Check value of TWI Status Register.
+    uart_printTWSR();
     if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
         uart_printstr("error2\r\n");
 
@@ -99,16 +106,18 @@ void    i2c_start()
     while (!(TWCR & (1<<TWINT)));
 
     // 7/ Check value of TWI Status Register.
+    uart_printTWSR();
     if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
         uart_printstr("error3\r\n");
 
     // 7/ Transmit STOP condition
-    TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
+    // TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
 }
 
 void    i2c_stop()
 {
-    TWCR = (1 << TWINT) | (1 <<TWSTO) | (1 << TWEN);
+    // 7/ Transmit STOP condition
+    TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
 }
 
 
@@ -125,13 +134,8 @@ int     main()
     while (1)
     {
         i2c_start();
-        uart_printbinary(TWSR, "TWSR (after start)");
-        // if (((TWSR & 0x18) == 0x18) || ((TWSR & 0x20) == 0x20) || ((TWSR & 0x38) == 0x38))
-        //     uart_printstr("Connection established\r\n");
-        // else
-        //     uart_printstr("Connection NOT established\r\n");
-        // i2c_stop();
-        // uart_printbinary(TWSR, "TWSR");
+
+        i2c_stop();
 
         uart_printstr("\r\n");
         _delay_ms(2000);
